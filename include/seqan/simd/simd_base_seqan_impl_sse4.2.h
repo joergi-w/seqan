@@ -71,6 +71,9 @@ SEQAN_DEFINE_SIMD_VECTOR_(SimdVector4UInt,      unsigned int,   16)
 SEQAN_DEFINE_SIMD_VECTOR_(SimdVector2Int64,     int64_t,        16)
 SEQAN_DEFINE_SIMD_VECTOR_(SimdVector2UInt64,    uint64_t,       16)
 
+// SimdParams_<16, 4>: 128bit = 4 elements * 4 * 8bit
+SEQAN_DEFINE_SIMD_VECTOR_(SimdVector4Float,     float,          16)
+
 // ============================================================================
 // Functions
 // ============================================================================
@@ -119,6 +122,16 @@ _fillVector(TSimdVector & vector,
   vector = SEQAN_VECTOR_CAST_(TSimdVector, _mm_set1_epi64x(std::get<0>(x)));
 }
 
+template <typename TSimdVector, typename... TValue>
+inline void
+_fillVector(TSimdVector & vector,
+            std::tuple<TValue...> const & x,
+            std::index_sequence<0> const &,
+            SimdParams_<16, 4, float> const &)
+{
+  vector = SEQAN_VECTOR_CAST_(TSimdVector, _mm_set1_ps(std::get<0>(x)));
+}
+
 template <typename TSimdVector, typename ...TValue, size_t ...INDICES>
 inline void
 _fillVector(TSimdVector & vector,
@@ -163,6 +176,16 @@ _fillVector(TSimdVector & vector,
     vector = SEQAN_VECTOR_CAST_(TSimdVector, _mm_set_epi64x(std::get<sizeof...(INDICES) - 1 - INDICES>(args)...));
 }
 
+template <typename TSimdVector, typename ...TValue, size_t ...INDICES>
+inline void
+_fillVector(TSimdVector & vector,
+            std::tuple<TValue...> const & args,
+            std::index_sequence<INDICES...> const &,
+            SimdParams_<16, 4, float> const &)
+{
+    vector = SEQAN_VECTOR_CAST_(TSimdVector, _mm_setr_ps(std::get<INDICES>(args)...));
+}
+
 // --------------------------------------------------------------------------
 // _clearVector (128bit)
 // --------------------------------------------------------------------------
@@ -171,6 +194,12 @@ template <typename TSimdVector, int L>
 inline void _clearVector(TSimdVector & vector, SimdParams_<16, L>)
 {
     vector = SEQAN_VECTOR_CAST_(TSimdVector, _mm_setzero_si128());
+}
+
+template <typename TSimdVector>
+inline void _clearVector(TSimdVector & vector, SimdParams_<16, 4, float>)
+{
+    vector = SEQAN_VECTOR_CAST_(TSimdVector, _mm_setzero_ps());
 }
 
 // --------------------------------------------------------------------------
@@ -199,6 +228,12 @@ template <typename TSimdVector, typename TValue>
 inline TSimdVector _createVector(TValue const x, SimdParams_<16, 2>)
 {
     return SEQAN_VECTOR_CAST_(TSimdVector, _mm_set1_epi64x(x));
+}
+
+template <typename TSimdVector, typename TValue>
+inline TSimdVector _createVector(TValue const x, SimdParams_<16, 4, float>)
+{
+    return SEQAN_VECTOR_CAST_(TSimdVector, _mm_set1_ps(x));
 }
 
 // --------------------------------------------------------------------------
@@ -235,6 +270,13 @@ inline TSimdVector _cmpEq(TSimdVector const & a, TSimdVector const & b, SimdPara
     return SEQAN_VECTOR_CAST_(TSimdVector,
                               _mm_cmpeq_epi64(SEQAN_VECTOR_CAST_(const __m128i&, a),
                                               SEQAN_VECTOR_CAST_(const __m128i&, b)));
+}
+
+template <typename TSimdVector>
+inline TSimdVector _cmpEq(TSimdVector const & a, TSimdVector const & b, SimdParams_<16, 4, float>)
+{
+    return SEQAN_VECTOR_CAST_(TSimdVector, _mm_cmpeq_ps(SEQAN_VECTOR_CAST_(const __m128&, a),
+                                                        SEQAN_VECTOR_CAST_(const __m128&, b)));
 }
 
 // --------------------------------------------------------------------------
@@ -315,6 +357,13 @@ inline TSimdVector _cmpGt(TSimdVector const & a, TSimdVector const & b, SimdPara
                               _mm_cmpgt_epi64(
                                   _mm_xor_si128(SEQAN_VECTOR_CAST_(const __m128i&, a) ,_mm_set1_epi64x(~0x7FFFFFFFFFFFFFFFul)),
                                   _mm_xor_si128(SEQAN_VECTOR_CAST_(const __m128i&, b), _mm_set1_epi64x(~0x7FFFFFFFFFFFFFFFul))));
+}
+
+template <typename TSimdVector>
+inline TSimdVector _cmpGt(TSimdVector const & a, TSimdVector const & b, SimdParams_<16, 4, float>)
+{
+    return SEQAN_VECTOR_CAST_(TSimdVector, _mm_cmpgt_ps(SEQAN_VECTOR_CAST_(const __m128&, a),
+                                                        SEQAN_VECTOR_CAST_(const __m128&, b)));
 }
 
 // --------------------------------------------------------------------------
@@ -417,6 +466,12 @@ inline TSimdVector _divide(TSimdVector const & a, int b, SimdParams_<16, 2>)
     return SEQAN_VECTOR_CAST_(TSimdVector, _mm_div_epi64(a, _mm_set1_epi64x(b)));
 }
 
+template <typename TSimdVector>
+inline TSimdVector _divide(TSimdVector const & a, float b, SimdParams_<16, 4, float>)
+{
+    return SEQAN_VECTOR_CAST_(TSimdVector, _mm_div_ps(a, _mm_set1_ps(b)));
+}
+
 // --------------------------------------------------------------------------
 // _add (128bit)
 // --------------------------------------------------------------------------
@@ -451,6 +506,13 @@ inline TSimdVector _add(TSimdVector const & a, TSimdVector const & b, SimdParams
     return SEQAN_VECTOR_CAST_(TSimdVector,
                               _mm_add_epi64(SEQAN_VECTOR_CAST_(const __m128i&, a),
                                             SEQAN_VECTOR_CAST_(const __m128i&, b)));
+}
+
+template <typename TSimdVector>
+inline TSimdVector _add(TSimdVector const & a, TSimdVector const & b, SimdParams_<16, 4, float>)
+{
+    return SEQAN_VECTOR_CAST_(TSimdVector, _mm_add_ps(SEQAN_VECTOR_CAST_(const __m128&, a),
+                                                      SEQAN_VECTOR_CAST_(const __m128&, b)));
 }
 
 // --------------------------------------------------------------------------
@@ -489,6 +551,13 @@ inline TSimdVector _sub(TSimdVector const & a, TSimdVector const & b, SimdParams
                                             SEQAN_VECTOR_CAST_(const __m128i&, b)));
 }
 
+template <typename TSimdVector>
+inline TSimdVector _sub(TSimdVector const & a, TSimdVector const & b, SimdParams_<16, 4, float>)
+{
+    return SEQAN_VECTOR_CAST_(TSimdVector, _mm_sub_ps(SEQAN_VECTOR_CAST_(const __m128&, a),
+                                                      SEQAN_VECTOR_CAST_(const __m128&, b)));
+}
+
 // --------------------------------------------------------------------------
 // _mult (128bit)
 // --------------------------------------------------------------------------
@@ -521,6 +590,13 @@ inline TSimdVector _mult(TSimdVector const & a, TSimdVector const &/*b*/, SimdPa
 {
     SEQAN_ASSERT_FAIL("SSE intrinsics for multiplying 64 bit values not implemented!");
     return a;
+}
+
+template <typename TSimdVector>
+inline TSimdVector _mult(TSimdVector const & a, TSimdVector const & b, SimdParams_<16, 4, float>)
+{
+    return SEQAN_VECTOR_CAST_(TSimdVector, _mm_mul_ps(SEQAN_VECTOR_CAST_(const __m128&, a),
+                                                      SEQAN_VECTOR_CAST_(const __m128&, b)));
 }
 
 // --------------------------------------------------------------------------
@@ -599,6 +675,12 @@ inline TSimdVector _max(TSimdVector const & a, TSimdVector const & b, SimdParams
 #endif // defined(__AVX512VL__)
 }
 
+template <typename TSimdVector>
+inline TSimdVector _max(TSimdVector const & a, TSimdVector const & b, SimdParams_<16, 4, float>)
+{
+    return SEQAN_VECTOR_CAST_(TSimdVector, _mm_max_ps(SEQAN_VECTOR_CAST_(const __m128&, a),
+                                                      SEQAN_VECTOR_CAST_(const __m128&, b)));
+}
 
 // --------------------------------------------------------------------------
 // _min (128bit)
@@ -676,6 +758,13 @@ inline TSimdVector _min(TSimdVector const & a, TSimdVector const & b, SimdParams
 #endif // defined(__AVX512VL__)
 }
 
+template <typename TSimdVector>
+inline TSimdVector _min(TSimdVector const & a, TSimdVector const & b, SimdParams_<16, 4, float>)
+{
+    return SEQAN_VECTOR_CAST_(TSimdVector, _mm_min_ps(SEQAN_VECTOR_CAST_(const __m128&, a),
+                                                      SEQAN_VECTOR_CAST_(const __m128&, b)));
+}
+
 // --------------------------------------------------------------------------
 // _blend (128bit)
 // --------------------------------------------------------------------------
@@ -689,6 +778,14 @@ inline TSimdVector _blend(TSimdVector const & a, TSimdVector const & b, TSimdVec
                                               SEQAN_VECTOR_CAST_(const __m128i&, mask)));
 }
 
+template <typename TSimdVector, typename TSimdVectorMask>
+inline TSimdVector _blend(TSimdVector const & a, TSimdVector const & b, TSimdVectorMask const & mask, SimdParams_<16, 4, float>)
+{
+    return SEQAN_VECTOR_CAST_(TSimdVector, _mm_blendv_ps(SEQAN_VECTOR_CAST_(const __m128&, a),
+                                                         SEQAN_VECTOR_CAST_(const __m128&, b),
+                                                         SEQAN_VECTOR_CAST_(const __m128&, mask)));
+}
+
 // --------------------------------------------------------------------------
 // _storeu (128bit)
 // --------------------------------------------------------------------------
@@ -699,6 +796,12 @@ inline void _storeu(T * memAddr, TSimdVector const & vec, SimdParams_<16, L>)
     _mm_storeu_si128((__m128i*)memAddr, reinterpret_cast<const __m128i &>(vec));
 }
 
+template <typename T, typename TSimdVector>
+inline void _storeu(T * memAddr, TSimdVector const & vec, SimdParams_<16, 4, float>)
+{
+    _mm_storeu_ps((float*)memAddr, reinterpret_cast<const __m128 &>(vec));
+}
+
 // ----------------------------------------------------------------------------
 // Function _load() 128bit
 // ----------------------------------------------------------------------------
@@ -707,6 +810,12 @@ template <typename TSimdVector, typename T, int L>
 inline TSimdVector _load(T const * memAddr, SimdParams_<16, L>)
 {
     return SEQAN_VECTOR_CAST_(TSimdVector, _mm_load_si128((__m128i const *) memAddr));
+}
+
+template <typename TSimdVector, typename T>
+inline TSimdVector _load(T const * memAddr, SimdParams_<16, 4, float>)
+{
+    return SEQAN_VECTOR_CAST_(TSimdVector, _mm_load_ps((float const *) memAddr));
 }
 
 // --------------------------------------------------------------------------

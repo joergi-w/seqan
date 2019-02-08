@@ -53,6 +53,12 @@ struct SimdSwizzleVectorImpl<TSimdVector, True>
     typedef typename SimdVector<uint8_t, sizeof(TSimdVector)>::Type Type;
 };
 
+// Forward integral types as void and otherwise (float, double) as is.
+template <typename TSimdVector>
+using SimdParamsScalarType_ = typename std::conditional<std::is_integral<typename Value<TSimdVector>::Type>::value,
+                                                        void,
+                                                        typename Value<TSimdVector>::Type>::type;
+
 // ============================================================================
 //
 // INTERFACE FUNCTIONS
@@ -82,7 +88,8 @@ inline SEQAN_FUNC_ENABLE_IF(Is<SimdVectorConcept<TSimdVector> >, void)
 clearVector(TSimdVector & vector)
 {
     typedef typename Value<TSimdVector>::Type TValue;
-    _clearVector(vector, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue)>());
+    _clearVector(vector, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue),
+                                     SimdParamsScalarType_<TSimdVector>>());
 }
 
 // --------------------------------------------------------------------------
@@ -94,7 +101,8 @@ inline SEQAN_FUNC_ENABLE_IF(Is<SimdVectorConcept<TSimdVector> >, TSimdVector)
 createVector(TValue const x)
 {
     typedef typename Value<TSimdVector>::Type TIVal;
-    return _createVector<TSimdVector>(x, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TIVal)>());
+    return _createVector<TSimdVector>(x, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TIVal),
+                                                     SimdParamsScalarType_<TSimdVector>>());
 }
 
 // --------------------------------------------------------------------------
@@ -115,7 +123,8 @@ fillVector(TSimdVector & vector, TValue const... args)
     typedef typename Value<TSimdVector>::Type TIVal;
     _fillVector(vector, std::make_tuple(args...),
                 std::make_index_sequence<sizeof...(args)>{},
-                SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TIVal)>());
+                SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TIVal),
+                            SimdParamsScalarType_<TSimdVector>>());
 }
 
 // --------------------------------------------------------------------------
@@ -127,7 +136,8 @@ inline SEQAN_FUNC_ENABLE_IF(Is<SimdVectorConcept<TSimdVector> >, typename SimdMa
 cmpEq (TSimdVector const & a, TSimdVector const & b)
 {
     typedef typename Value<TSimdVector>::Type TValue;
-    return _cmpEq(a, b, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue)>());
+    return _cmpEq(a, b, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue),
+                                    SimdParamsScalarType_<TSimdVector>>());
 }
 
 // --------------------------------------------------------------------------
@@ -139,7 +149,8 @@ inline SEQAN_FUNC_ENABLE_IF(Is<SimdVectorConcept<TSimdVector> >, typename SimdMa
 operator==(TSimdVector const & a, TSimdVector const & b)
 {
     typedef typename Value<TSimdVector>::Type TValue;
-    return _cmpEq(a, b, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue)>());
+    return _cmpEq(a, b, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue),
+                                    SimdParamsScalarType_<TSimdVector>>());
 }
 
 // --------------------------------------------------------------------------
@@ -163,7 +174,8 @@ inline SEQAN_FUNC_ENABLE_IF(Is<SimdVectorConcept<TSimdVector> >, typename SimdMa
 operator>(TSimdVector const & a, TSimdVector const & b)
 {
     typedef typename Value<TSimdVector>::Type TValue;
-    return _cmpGt(a, b, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue)>());
+    return _cmpGt(a, b, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue),
+                                    SimdParamsScalarType_<TSimdVector>>());
 }
 
 // --------------------------------------------------------------------------
@@ -259,7 +271,8 @@ inline SEQAN_FUNC_ENABLE_IF(Is<SimdVectorConcept<TSimdVector> >, TSimdVector)
 operator+(TSimdVector const & a, TSimdVector const & b)
 {
     typedef typename Value<TSimdVector>::Type TValue;
-    return _add(a, b, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue)>());
+    return _add(a, b, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue),
+                                  SimdParamsScalarType_<TSimdVector>>());
 }
 
 // --------------------------------------------------------------------------
@@ -271,7 +284,8 @@ inline SEQAN_FUNC_ENABLE_IF(Is<SimdVectorConcept<TSimdVector> >, TSimdVector)
 operator-(TSimdVector const & a, TSimdVector const & b)
 {
     typedef typename Value<TSimdVector>::Type TValue;
-    return _sub(a, b, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue)>());
+    return _sub(a, b, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue),
+                                  SimdParamsScalarType_<TSimdVector>>());
 }
 
 // --------------------------------------------------------------------------
@@ -283,7 +297,8 @@ inline SEQAN_FUNC_ENABLE_IF(Is<SimdVectorConcept<TSimdVector> >, TSimdVector)
 operator*(TSimdVector const & a, TSimdVector const & b)
 {
     typedef typename Value<TSimdVector>::Type TValue;
-    return _mult(a, b, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue)>());
+    return _mult(a, b, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue),
+                                   SimdParamsScalarType_<TSimdVector>>());
 }
 
 // --------------------------------------------------------------------------
@@ -295,7 +310,8 @@ inline SEQAN_FUNC_ENABLE_IF(Is<SimdVectorConcept<TSimdVector> >, TSimdVector)
 operator/(TSimdVector const & a, TSimdVector const & b)
 {
     typedef typename Value<TSimdVector>::Type TValue;
-    return _div(a, b, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue)>());
+    return _div(a, b, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue),
+                                  SimdParamsScalarType_<TSimdVector>>());
 }
 
 // --------------------------------------------------------------------------
@@ -331,7 +347,8 @@ inline SEQAN_FUNC_ENABLE_IF(Is<SimdVectorConcept<TSimdVector> >, TSimdVector)
 blend(TSimdVector const & a, TSimdVector const & b, TSimdVectorMask const & mask)
 {
     typedef typename Value<TSimdVector>::Type TValue;
-    return _blend(a, b, mask, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue)>());
+    return _blend(a, b, mask, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue),
+                                          SimdParamsScalarType_<TSimdVector>>());
 }
 
 // --------------------------------------------------------------------------
@@ -355,7 +372,8 @@ inline SEQAN_FUNC_ENABLE_IF(Is<SimdVectorConcept<TSimdVector> >, TSimdVector)
 load(T const * memAddr)
 {
     typedef typename Value<TSimdVector>::Type TValue;
-    return _load<TSimdVector>(memAddr, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue)>());
+    return _load<TSimdVector>(memAddr, SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TValue),
+                                                   SimdParamsScalarType_<TSimdVector>>());
 }
 
 // --------------------------------------------------------------------------
@@ -367,7 +385,8 @@ inline SEQAN_FUNC_ENABLE_IF(Is<SimdVectorConcept<TSimdVector> >, TSimdVector)
 gather(TValue const * memAddr, TSimdVector const & idx)
 {
     typedef typename Value<TSimdVector>::Type TInnerValue;
-    return _gather(memAddr, idx, std::integral_constant<size_t, sizeof(TValue)>(), SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TInnerValue)>());
+    return _gather(memAddr, idx, std::integral_constant<size_t, sizeof(TValue)>(),
+                   SimdParams_<sizeof(TSimdVector), sizeof(TSimdVector) / sizeof(TInnerValue)>());
 }
 
 // --------------------------------------------------------------------------
