@@ -410,8 +410,8 @@ _setUpArgumentParser(ArgumentParser & parser)
                              "To select multiple generation methods recall this option with different arguments. ",
                              ArgParseArgument::STRING, "", true));
     setValidValues(parser, "method", "global local overlap lcs");
-    setDefaultValue(parser, "method", "global");
-    addDefaultValue(parser, "method", "local");
+//    setDefaultValue(parser, "method", "global");
+//    addDefaultValue(parser, "method", "local");
 
     addOption(parser,
               ArgParseOption("l", "libraries", "Name of match file. "
