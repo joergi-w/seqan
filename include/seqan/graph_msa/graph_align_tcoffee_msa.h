@@ -118,6 +118,12 @@ public:
     */
     unsigned bandWidth;
 
+    /*!
+    * @var bool MsaOptions::no_segments;
+    * @brief Switch off segment generation.
+    */
+    bool no_segments{false};
+
     // TODO(holtgrew): Document me!
     // Various input and output file names
     String<std::string> alnfiles;       // External alignment files
@@ -471,7 +477,7 @@ void globalMsaAlignment(Graph<Alignment<TStringSet, TCargo, TSpec> > & gAlign,
         {
             std::ifstream strm_lib;
             strm_lib.open((*begIt).c_str(), std::ios_base::in | std::ios_base::binary);
-            read(strm_lib, matches, scores, sequenceNames, TCoffeeLib());
+            read(strm_lib, matches, scores, sequenceNames, !msaOpt.no_segments, TCoffeeLib());
             strm_lib.close();
         }
     }

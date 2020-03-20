@@ -120,6 +120,7 @@ read(TFile & file,
      String<TFragment, TSpec>& matches,
      String<TScoreValue, TSpec2>& scores,
      TNames const& names,
+     bool with_segments,
      TCoffeeLib)
 {
 //IOREV _nodoc_ _notinlined_ specialization not documented
@@ -218,10 +219,12 @@ read(TFile & file,
             }
         }
     }
+
+    // Segment generation.
     for(TSize i = 0; i<length(resPair); ++i) {
         if (resPair[i].empty()) continue;
-        TSize seq1 = i / nseq;
-        TSize seq2 = i % nseq;
+        seq1 = i / nseq;
+        seq2 = i % nseq;
         //std::cout << "#" << seq1 << ',' << seq2 << std::endl;
         typename TResiduePairSet::const_iterator pos = resPair[i].begin();
         typename TResiduePairSet::const_iterator posEnd = resPair[i].end();
@@ -232,9 +235,10 @@ read(TFile & file,
         //std::cout << pos->first.first << ',' << pos->first.second << ',' << pos->second << std::endl;
         ++pos;
         while(pos != posEnd) {
-            if ((startMatch1 + len == pos->first.first) &&
-                (startMatch2 + len == pos->first.second) &&
-                (carg / (TScoreValue) len == pos->second)) {
+            if (with_segments &&
+                startMatch1 + len == pos->first.first &&
+                startMatch2 + len == pos->first.second &&
+                carg / (TScoreValue) len == pos->second) {
                     carg += pos->second;
                     ++len;
             } else {

@@ -142,6 +142,7 @@ _initMsaParams(ArgumentParser& parser, TScore& scMat)
     // Set main options
     getOptionValue(msaOpt.seqfile, parser, "seq");
     getOptionValue(msaOpt.outfile, parser, "outfile");
+    getOptionValue(msaOpt.no_segments, parser, "no-segments");
 
     String<char> optionVal;
 
@@ -434,6 +435,9 @@ _setUpArgumentParser(ArgumentParser & parser)
                              ArgParseArgument::INTEGER));
     setDefaultValue(parser, "bw", 60);
     setMinValue(parser, "bw", "2");
+
+    addOption(parser, ArgParseOption("n", "no-segments",
+        "Disable segment generation for lib files, use one node per character instead."));
 
     // code before KNIME adaption
     /*   addOption(parser,
